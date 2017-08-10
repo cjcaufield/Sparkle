@@ -9,7 +9,7 @@
 #ifndef SUUPDATEALERT_H
 #define SUUPDATEALERT_H
 
-#import "SUWindowController.h"
+#import <Cocoa/Cocoa.h>
 #import "SUVersionDisplayProtocol.h"
 
 @protocol SUUpdateAlertDelegate;
@@ -21,24 +21,18 @@ typedef NS_ENUM(NSInteger, SUUpdateAlertChoice) {
     SUOpenInfoURLChoice
 };
 
-@class WebView, SUAppcastItem, SUHost;
-@interface SUUpdateAlert : SUWindowController
+@class SUAppcastItem, SUHost;
+@interface SUUpdateAlert : NSWindowController
 
-@property (weak) id<SUUpdateAlertDelegate> delegate;
 @property (weak) id<SUVersionDisplay> versionDisplayer;
 
-- (instancetype)initWithAppcastItem:(SUAppcastItem *)item host:(SUHost *)host;
+- (instancetype)initWithAppcastItem:(SUAppcastItem *)item host:(SUHost *)host completionBlock:(void(^)(SUUpdateAlertChoice))c;
 
 - (IBAction)installUpdate:sender;
 - (IBAction)skipThisVersion:sender;
 - (IBAction)remindMeLater:sender;
+- (void)disableKeyboardShortcutForInstallButton;
 
-@end
-
-@protocol SUUpdateAlertDelegate <NSObject>
-- (void)updateAlert:(SUUpdateAlert *)updateAlert finishedWithChoice:(SUUpdateAlertChoice)updateChoice;
-@optional
-- (void)updateAlert:(SUUpdateAlert *)updateAlert shouldAllowAutoUpdate:(BOOL *)shouldAllowAutoUpdate;
 @end
 
 #endif

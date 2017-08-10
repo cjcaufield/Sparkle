@@ -5,29 +5,20 @@
 //  Copyright 2008 Andy Matuschak. All rights reserved.
 //
 
-#import "SUUpdater.h"
-#import "SUAppcast.h"
-#import "SUAppcastItem.h"
-#import "SUVersionComparisonProtocol.h"
+#import <Foundation/Foundation.h>
 
 @interface SUHost : NSObject
 
 @property (strong, readonly) NSBundle *bundle;
 
-+ (NSString *)systemVersionString;
-
 - (instancetype)initWithBundle:(NSBundle *)aBundle;
 @property (readonly, copy) NSString *bundlePath;
-@property (readonly, copy) NSString *appSupportPath;
-@property (readonly, copy) NSString *installationPath;
 @property (readonly, copy) NSString *name;
 @property (readonly, copy) NSString *version;
 @property (readonly, copy) NSString *displayVersion;
-@property (readonly, copy) NSImage *icon;
 @property (getter=isRunningOnReadOnlyVolume, readonly) BOOL runningOnReadOnlyVolume;
-@property (getter=isBackgroundApplication, readonly) BOOL backgroundApplication;
 @property (readonly, copy) NSString *publicDSAKey;
-@property (readonly, copy) NSArray *systemProfile;
+@property (readonly, nonatomic, copy) NSString *publicDSAKeyFileKey;
 
 - (id)objectForInfoDictionaryKey:(NSString *)key;
 - (BOOL)boolForInfoDictionaryKey:(NSString *)key;

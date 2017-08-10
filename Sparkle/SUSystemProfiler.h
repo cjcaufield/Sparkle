@@ -9,12 +9,16 @@
 #ifndef SUSYSTEMPROFILER_H
 #define SUSYSTEMPROFILER_H
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class SUHost;
 @interface SUSystemProfiler : NSObject
-+ (SUSystemProfiler *)sharedSystemProfiler;
-- (NSMutableArray *)systemProfileArrayForHost:(SUHost *)host;
+
++ (NSArray<NSDictionary<NSString *, NSString *> *> *)systemProfileArrayForHost:(SUHost *)host;
+
 @end
 
+NS_ASSUME_NONNULL_END
 #endif

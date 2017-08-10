@@ -6,27 +6,21 @@
 //  Copyright 2008 Andy Matuschak. All rights reserved.
 //
 
-#ifndef SUINSTALLER_H
-#define SUINSTALLER_H
-
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 #import "SUVersionComparisonProtocol.h"
 
-@protocol SUInstallerDelegate;
+NS_ASSUME_NONNULL_BEGIN
 
 @class SUHost;
+
+@protocol SUInstallerProtocol;
+
 @interface SUInstaller : NSObject
 
-+ (NSString *)appPathInUpdateFolder:(NSString *)updateFolder forHost:(SUHost *)host;
-+ (void)installFromUpdateFolder:(NSString *)updateFolder overHost:(SUHost *)host installationPath:(NSString *)installationPath delegate:(id<SUInstallerDelegate>)delegate versionComparator:(id<SUVersionComparison>)comparator;
-+ (void)finishInstallationToPath:(NSString *)installationPath withResult:(BOOL)result host:(SUHost *)host error:(NSError *)error delegate:(id<SUInstallerDelegate>)delegate;
-+ (NSString *)updateFolder;
++ (nullable id<SUInstallerProtocol>)installerForHost:(SUHost *)host fileOperationToolPath:(NSString *)fileOperationToolPath updateDirectory:(NSString *)updateDirectory error:(NSError **)error;
+
++ (nullable NSString *)installSourcePathInUpdateFolder:(NSString *)inUpdateFolder forHost:(SUHost *)host isPackage:(BOOL *)isPackagePtr isGuided:(nullable BOOL *)isGuidedPtr;
 
 @end
 
-@protocol SUInstallerDelegate <NSObject>
-- (void)installerFinishedForHost:(SUHost *)host;
-- (void)installerForHost:(SUHost *)host failedWithError:(NSError *)error;
-@end
-
-#endif
+NS_ASSUME_NONNULL_END

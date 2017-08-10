@@ -7,60 +7,84 @@
 //
 
 #import "SUAutomaticUpdateAlert.h"
-
+#import "SULocalizations.h"
+#import "SUAppcastItem.h"
+#import "SUApplicationInfo.h"
 #import "SUHost.h"
+#import "SUTouchBarForwardDeclarations.h"
+#import "SUTouchBarButtonGroup.h"
 
-@interface SUAutomaticUpdateAlert ()
+static NSString *const SUAutomaticUpdateAlertTouchBarIndentifier = @"" SPARKLE_BUNDLE_IDENTIFIER ".SUAutomaticUpdateAlert";
+
+@interface SUAutomaticUpdateAlert () <NSTouchBarDelegate>
+@property (strong) void(^completionBlock)(SUAutomaticInstallationChoice);
 @property (strong) SUAppcastItem *updateItem;
-@property (weak) id<SUAutomaticUpdateAlertDelegate> delegate;
 @property (strong) SUHost *host;
+
+@property (weak) IBOutlet NSButton *skipButton;
+@property (weak) IBOutlet NSButton *laterButton;
+@property (weak) IBOutlet NSButton *installButton;
 @end
 
 @implementation SUAutomaticUpdateAlert
-@synthesize delegate;
 @synthesize host;
 @synthesize updateItem;
+@synthesize completionBlock;
+@synthesize skipButton;
+@synthesize laterButton;
+@synthesize installButton;
 
-- (instancetype)initWithAppcastItem:(SUAppcastItem *)item host:(SUHost *)aHost delegate:(id<SUAutomaticUpdateAlertDelegate>)del
+- (instancetype)initWithAppcastItem:(SUAppcastItem *)item host:(SUHost *)aHost completionBlock:(void (^)(SUAutomaticInstallationChoice))block
 {
-    self = [super initWithHost:aHost windowNibName:@"SUAutomaticUpdateAlert"];
-	if (self)
-	{
+    self = [super initWithWindowNibName:@"SUAutomaticUpdateAlert"];
+    if (self) {
         self.updateItem = item;
-        self.delegate = del;
+        self.completionBlock = block;
         self.host = aHost;
         [self setShouldCascadeWindows:NO];
+
         [[self window] center];
     }
     return self;
 }
 
-- (NSString *)description { return [NSString stringWithFormat:@"%@ <%@, %@>", [self class], [self.host bundlePath], [self.host installationPath]]; }
+- (NSString *__nonnull)description { return [NSString stringWithFormat:@"%@ <%@>", [self class], [self.host bundlePath]]; }
 
 - (IBAction)installNow:(id)__unused sender
 {
     [self close];
-    [self.delegate automaticUpdateAlert:self finishedWithChoice:SUInstallNowChoice];
+    self.completionBlock(SUInstallNowChoice);
+    self.completionBlock = nil;
 }
 
 - (IBAction)installLater:(id)__unused sender
 {
     [self close];
-    [self.delegate automaticUpdateAlert:self finishedWithChoice:SUInstallLaterChoice];
+    self.completionBlock(SUInstallLaterChoice);
+    self.completionBlock = nil;
 }
 
 - (IBAction)doNotInstall:(id)__unused sender
 {
     [self close];
-    [self.delegate automaticUpdateAlert:self finishedWithChoice:SUDoNotInstallChoice];
+    self.completionBlock(SUDoNotInstallChoice);
+    self.completionBlock = nil;
 }
 
-- (NSImage *)applicationIcon
+- (void)windowDidLoad
 {
-    return [self.host icon];
+    if ([self.updateItem isCriticalUpdate]) {
+        self.skipButton.enabled = NO;
+    }
 }
 
-- (NSString *)titleText
+
+- (NSImage *__nonnull)applicationIcon
+{
+    return [SUApplicationInfo bestIconForHost:self.host];
+}
+
+- (NSString *__nonnull)titleText
 {
     if ([self.updateItem isCriticalUpdate])
     {
@@ -82,6 +106,25 @@
     {
         return [NSString stringWithFormat:SULocalizedString(@"%1$@ %2$@ has been downloaded and is ready to use! Would you like to install it and relaunch %1$@ now?", nil), [self.host name], [self.updateItem displayVersionString]];
     }
+}
+
+- (NSTouchBar *)makeTouchBar
+{
+    NSTouchBar *touchBar = [[NSClassFromString(@"NSTouchBar") alloc] init];
+    touchBar.defaultItemIdentifiers = @[SUAutomaticUpdateAlertTouchBarIndentifier,];
+    touchBar.principalItemIdentifier = SUAutomaticUpdateAlertTouchBarIndentifier;
+    touchBar.delegate = self;
+    return touchBar;
+}
+
+- (NSTouchBarItem *)touchBar:(NSTouchBar * __unused)touchBar makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
+{
+    if ([identifier isEqualToString:SUAutomaticUpdateAlertTouchBarIndentifier]) {
+        NSCustomTouchBarItem* item = [(NSCustomTouchBarItem *)[NSClassFromString(@"NSCustomTouchBarItem") alloc] initWithIdentifier:identifier];
+        item.viewController = [[SUTouchBarButtonGroup alloc] initByReferencingButtons:@[self.installButton, self.laterButton, self.skipButton]];
+        return item;
+    }
+    return nil;
 }
 
 @end
